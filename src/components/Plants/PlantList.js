@@ -15,7 +15,6 @@ const PlantList = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [apiStatus, setApiStatus] = useState('verificando');
-  const [deleting, setDeleting] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
   // Carregar todas as plantas ao iniciar
@@ -128,12 +127,12 @@ const PlantList = () => {
     }, 500);
     
     return () => clearTimeout(delaySearch);
-  }, [searchTerm]);
+  }, [searchTerm, searchPlantas]);
 
   // Lidar com mudança no filtro
   useEffect(() => {
     filterByCategory(filter);
-  }, [filter]);
+  }, [filter, filterByCategory]);
 
   // Função para mostrar uma notificação
   const showNotification = (message, type = 'success') => {
@@ -146,7 +145,6 @@ const PlantList = () => {
   // Função para excluir uma planta
   const handleDeletePlant = async (id) => {
     try {
-      setDeleting(true);
       await plantasService.delete(id);
       
       // Atualizar as listas de plantas
@@ -158,8 +156,6 @@ const PlantList = () => {
     } catch (err) {
       console.error('Erro ao excluir planta:', err);
       showNotification('Erro ao excluir planta. Tente novamente.', 'error');
-    } finally {
-      setDeleting(false);
     }
   };
 
