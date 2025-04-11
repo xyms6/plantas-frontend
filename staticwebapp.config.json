@@ -1,20 +1,15 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/js/*", "/api/*"]
-  },
   "routes": [
     {
-      "route": "/planta/*",
-      "serve": "/index.html",
-      "statusCode": 200
-    },
-    {
-      "route": "/planta/editar/*",
+      "route": "/*",
       "serve": "/index.html",
       "statusCode": 200
     }
   ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/js/*"]
+  },
   "responseOverrides": {
     "404": {
       "rewrite": "/index.html",
@@ -22,12 +17,17 @@
     }
   },
   "globalHeaders": {
-    "content-security-policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'",
-    "cache-control": "must-revalidate, max-age=600",
-    "X-Frame-Options": "DENY",
-    "X-Content-Type-Options": "nosniff"
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
   },
   "mimeTypes": {
     ".json": "application/json"
+  },
+  "platform": {
+    "apiRuntime": "node:18"
+  },
+  "environmentVariables": {
+    "REACT_APP_API_URL": "https://plantas-api-dvczcfeqcybveeh5.brazilsouth-01.azurewebsites.net"
   }
 } 

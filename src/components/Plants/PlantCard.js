@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaTrashAlt, FaEye, FaEdit } from 'react-icons/fa';
+import { FaTrash, FaEye, FaEdit, FaSyncAlt } from 'react-icons/fa';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import './PlantCard.css';
 
 const PlantCard = ({ planta, onDelete }) => {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleViewClick = (e) => {
-    e.stopPropagation();
+  const handleViewClick = () => {
     navigate(`/planta/${planta.id}`);
   };
 
   const handleEditClick = (e) => {
     e.stopPropagation();
-    // Implementar a edição posteriormente
     navigate(`/planta/editar/${planta.id}`);
   };
 
@@ -31,10 +30,6 @@ const PlantCard = ({ planta, onDelete }) => {
     }
   };
 
-  const cancelDelete = () => {
-    setShowConfirmDialog(false);
-  };
-
   const truncateText = (text, maxLength) => {
     if (!text) return '';
     if (text.length <= maxLength) return text;
@@ -42,67 +37,85 @@ const PlantCard = ({ planta, onDelete }) => {
   };
 
   const isLocalPlant = planta.id && planta.id.toString().startsWith('local_');
+  const placeholderImage = '/placeholder-plant.svg';
 
   return (
     <>
-      <div className="plant-card">
-        <div className="plant-image-container">
-          {planta.imagem ? (
-            <img src={planta.imagem} alt={planta.nome} className="plant-image" />
-          ) : (
-            <img src="/placeholder-plant.svg" alt="Imagem não disponível" className="plant-image" />
-          )}
+      <div 
+        className={`plant-card ${isLocalPlant ? 'plant-card-local' : ''}`}
+        onClick={handleViewClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="plant-image-wrapper">
+          <img 
+            src={planta.imagem || placeholderImage} 
+            alt={planta.nome} 
+            className="plant-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = placeholderImage;
+            }}
+          />
+          
           {isLocalPlant && (
-            <div className="local-badge">
-              Pendente de sincronização
+            <div className="sync-badge">
+              <FaSyncAlt className="sync-icon" />
+              <span>Pendente</span>
             </div>
           )}
         </div>
         
-        <div className="plant-card-content">
-          <h3>{planta.nome}</h3>
-          <p className="species">{planta.especie}</p>
+        <div className="plant-info">
+          <h3 className="plant-name">{planta.nome}</h3>
+          <p className="plant-species">{planta.especie}</p>
+          
           {planta.categoria && (
-            <span className="category-tag">
+            <span className="plant-category">
               {planta.categoria.charAt(0).toUpperCase() + planta.categoria.slice(1)}
             </span>
           )}
-          <p className="description">{truncateText(planta.descricao, 120)}</p>
           
-          <div className="card-actions">
+          <p className="plant-description">
+            {truncateText(planta.descricao, 100)}
+          </p>
+          
+          <div className={`card-actions ${isHovered ? 'visible' : ''}`}>
             <button 
-              className="card-action-btn view" 
+              className="card-btn view-btn" 
               onClick={handleViewClick}
               aria-label="Ver detalhes"
             >
-              <FaEye /> Ver
+              <FaEye />
+              <span>Detalhes</span>
             </button>
             <button 
-              className="card-action-btn edit" 
+              className="card-btn edit-btn" 
               onClick={handleEditClick}
               aria-label="Editar planta"
             >
-              <FaEdit /> Editar
+              <FaEdit />
+              <span>Editar</span>
             </button>
             <button 
-              className="card-action-btn delete" 
+              className="card-btn delete-btn" 
               onClick={handleDeleteClick}
               aria-label="Excluir planta"
             >
-              <FaTrashAlt /> Excluir
+              <FaTrash />
+              <span>Excluir</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Diálogo de confirmação para exclusão */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
-        title="Confirmar exclusão"
-        message={`Tem certeza que deseja excluir a planta ${planta.nome}? Esta ação não pode ser desfeita.`}
+        title="Excluir planta"
+        message={`Tem certeza que deseja excluir "${planta.nome}"?`}
         onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-        confirmText="Sim, excluir"
+        onCancel={() => setShowConfirmDialog(false)}
+        confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
       />
