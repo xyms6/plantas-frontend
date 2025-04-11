@@ -94,7 +94,7 @@ function App() {
             
             <div className="footer-links">
               <a 
-                href="https://github.com/xyms/plantas-frontend" 
+                href="https://github.com/xyms6/plantas-frontend"
                 className="footer-link"
                 target="_blank" 
                 rel="noopener noreferrer"
