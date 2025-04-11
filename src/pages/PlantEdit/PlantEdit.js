@@ -55,7 +55,7 @@ const PlantEdit = () => {
 
     try {
       // Atualizar a planta
-      const updatedPlanta = await plantasService.update(id, planta);
+      await plantasService.update(id, planta);
       
       showNotification('Planta atualizada com sucesso!', 'success');
       
