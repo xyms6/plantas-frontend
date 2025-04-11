@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f0f4e9"/>
+  <path d="M400,150 C450,150 500,175 525,225 C550,275 550,325 525,375 C500,425 450,450 400,450 C350,450 300,425 275,375 C250,325 250,275 275,225 C300,175 350,150 400,150 Z" fill="#315c2b" opacity="0.2"/>
+  <path d="M400,200 L400,350 M350,250 L450,250 M350,300 L450,300" stroke="#315c2b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M400,350 C425,350 450,375 450,400 C450,425 425,450 400,450 C375,450 350,425 350,400 C350,375 375,350 400,350 Z" fill="#315c2b" opacity="0.3"/>
+  <text x="400" y="500" font-family="'Playfair Display', serif" font-size="30" fill="#315c2b" text-anchor="middle">Imagem não disponível</text>
+</svg> 
