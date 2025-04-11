@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - main
-      - Luisdev
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
-      - Luisdev
 
 jobs:
   build_and_deploy_job:
