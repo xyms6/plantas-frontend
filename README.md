@@ -45,5 +45,3 @@ npm run build
 
 - `GET /plantas` - Lista todas as plantas
 - `GET /plantas/{id}` - Obtém uma planta específica
-- `GET /plantas/busca?termo={termo}` - Busca plantas por termo
-- `GET /plantas/categoria/{categoria}` - Filtra plantas por categoria
