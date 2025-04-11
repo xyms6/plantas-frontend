@@ -1,100 +1,112 @@
 .plant-card {
-  border: none;
-  border-radius: var(--border-radius);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   background-color: white;
   height: 100%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: relative;
+  cursor: pointer;
 }
 
 .plant-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-.plant-image-container {
+.plant-card-local {
+  background-color: #fffdf7;
+  border: 1px solid rgba(246, 173, 85, 0.3);
+}
+
+.plant-image-wrapper {
   position: relative;
   overflow: hidden;
-  height: 200px;
+  height: 180px;
 }
 
 .plant-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.8s ease;
+  transition: transform 0.4s ease;
 }
 
 .plant-card:hover .plant-image {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
-.local-badge {
+.sync-badge {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(255, 193, 7, 0.9);
-  color: #856404;
+  background-color: rgba(246, 173, 85, 0.9);
+  color: #805b28;
   font-size: 0.7rem;
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 500;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.plant-card-content {
-  padding: 20px;
+.sync-icon {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.plant-info {
+  padding: 16px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  position: relative;
 }
 
-.plant-card h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  color: var(--color-primary-dark);
-  font-family: var(--font-heading);
-  font-size: 1.3rem;
+.plant-name {
+  margin: 0 0 4px 0;
+  color: #2d3748;
+  font-size: 1.2rem;
   font-weight: 600;
-  transition: color 0.3s;
+  transition: color 0.2s;
 }
 
-.plant-card:hover h3 {
+.plant-card:hover .plant-name {
   color: var(--color-primary);
 }
 
-.species {
+.plant-species {
   font-style: italic;
-  color: var(--color-gray);
-  margin: 0 0 12px;
-  font-size: 0.9rem;
+  color: #718096;
+  margin: 0 0 10px;
+  font-size: 0.85rem;
 }
 
-.category-tag {
+.plant-category {
   display: inline-block;
-  background-color: rgba(82, 143, 72, 0.1);
-  color: var(--color-primary);
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #2f855a;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.7rem;
   margin-bottom: 12px;
   font-weight: 500;
   text-transform: capitalize;
-  border: 1px solid rgba(82, 143, 72, 0.2);
 }
 
-.description {
-  color: var(--color-dark);
+.plant-description {
+  color: #4a5568;
   line-height: 1.5;
-  opacity: 0.8;
   flex-grow: 1;
   margin: 0 0 16px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -106,12 +118,20 @@
   display: flex;
   gap: 8px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding-top: 16px;
+  padding-top: 12px;
   margin-top: auto;
   justify-content: space-between;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s;
 }
 
-.card-action-btn {
+.card-actions.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-btn {
   border: none;
   background: none;
   display: flex;
@@ -123,32 +143,53 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  flex: 1;
+  justify-content: center;
 }
 
-.card-action-btn.view {
-  color: var(--color-primary);
+.card-btn span {
+  display: none;
 }
 
-.card-action-btn.edit {
-  color: #17a2b8;
+.card-btn:hover span {
+  display: inline;
 }
 
-.card-action-btn.delete {
-  color: #dc3545;
+.view-btn {
+  color: #4299e1;
 }
 
-.card-action-btn:hover {
+.edit-btn {
+  color: #38b2ac;
+}
+
+.delete-btn {
+  color: #f56565;
+}
+
+.card-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.card-action-btn.view:hover {
-  background-color: rgba(82, 143, 72, 0.1);
+.view-btn:hover {
+  background-color: rgba(66, 153, 225, 0.1);
 }
 
-.card-action-btn.edit:hover {
-  background-color: rgba(23, 162, 184, 0.1);
+.edit-btn:hover {
+  background-color: rgba(56, 178, 172, 0.1);
 }
 
-.card-action-btn.delete:hover {
-  background-color: rgba(220, 53, 69, 0.1);
+.delete-btn:hover {
+  background-color: rgba(245, 101, 101, 0.1);
+}
+
+@media (max-width: 768px) {
+  .card-actions {
+    opacity: 1;
+    transform: none;
+  }
+  
+  .card-btn span {
+    display: none;
+  }
 } 

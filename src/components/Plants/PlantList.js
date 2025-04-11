@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import plantasService from '../../services/api';
 import PlantForm from './PlantForm';
 import PlantCard from './PlantCard';
 import PendingUploads from './PendingUploads';
+import { FaPlus, FaSearch, FaFilter } from 'react-icons/fa';
 import './PlantList.css';
 
 const PlantList = () => {
@@ -19,53 +20,45 @@ const PlantList = () => {
 
   // Carregar todas as plantas ao iniciar
   useEffect(() => {
-    const fetchPlantas = async () => {
-      try {
-        setLoading(true);
-        
-        // Verificar se a API está online
-        try {
-          await plantasService.ping();
-          setApiStatus('conectado');
-        } catch (pingError) {
-          console.error('Erro ao verificar API:', pingError);
-          setApiStatus('desconectado');
-        }
-        
-        const data = await plantasService.getAll();
-        setPlantas(data);
-        setFilteredPlantas(data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Erro detalhado:', err);
-        
-        // Mensagens de erro mais específicas para o Azure
-        if (err.message && err.message.includes('Network Error')) {
-          setError('Erro de conexão. Se sua internet está funcionando, o servidor pode estar offline. Você ainda pode adicionar plantas que serão sincronizadas quando o servidor estiver disponível.');
-          setApiStatus('desconectado');
-        } else if (err.response && err.response.status === 404) {
-          setError('Endpoint não encontrado na API. Você ainda pode adicionar plantas que serão sincronizadas quando o servidor estiver disponível.');
-          setApiStatus('parcial');
-        } else if (err.response && err.response.status >= 500) {
-          setError('Problema no servidor. Você ainda pode adicionar plantas que serão sincronizadas quando o servidor estiver disponível.');
-          setApiStatus('desconectado');
-        } else {
-          setError('Erro ao carregar as plantas. Você ainda pode adicionar plantas que serão sincronizadas quando o servidor estiver disponível.');
-          setApiStatus('desconectado');
-        }
-        
-        // Mesmo com erro, definimos plantas como um array vazio
-        setPlantas([]);
-        setFilteredPlantas([]);
-        setLoading(false);
-      }
-    };
-
     fetchPlantas();
   }, []);
 
-  // Função para buscar plantas usando o termo de busca
-  const searchPlantas = async () => {
+  const fetchPlantas = async () => {
+    try {
+      setLoading(true);
+      
+      // Verificar status da API
+      try {
+        await plantasService.ping();
+        setApiStatus('conectado');
+      } catch (pingError) {
+        setApiStatus('desconectado');
+      }
+      
+      const data = await plantasService.getAll();
+      setPlantas(data);
+      setFilteredPlantas(data);
+    } catch (err) {
+      console.error('Erro ao carregar plantas:', err);
+      
+      if (err.message && err.message.includes('Network Error')) {
+        setError('Erro de conexão. Modo offline ativado.');
+      } else if (err.response && err.response.status === 404) {
+        setError('API indisponível. Modo offline ativado.');
+      } else {
+        setError('Erro ao carregar plantas. Modo offline ativado.');
+      }
+      
+      setPlantas([]);
+      setFilteredPlantas([]);
+      setApiStatus('desconectado');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para buscar plantas (memoizada com useCallback)
+  const searchPlantas = useCallback(async () => {
     if (!searchTerm.trim()) {
       setFilteredPlantas(plantas);
       return;
@@ -73,52 +66,40 @@ const PlantList = () => {
     
     setIsSearching(true);
     try {
-      // Verificar se o backend suporta busca por API
-      // Se sim, usamos a API de busca, senão fazemos a filtragem no frontend
-      try {
-        const results = await plantasService.search(searchTerm);
-        setFilteredPlantas(results);
-      } catch (searchError) {
-        // Fallback para busca no frontend se a API de busca não existir
-        const term = searchTerm.toLowerCase();
-        const results = plantas.filter(planta => 
-          planta.nome.toLowerCase().includes(term) || 
-          planta.especie.toLowerCase().includes(term) ||
-          planta.descricao.toLowerCase().includes(term)
-        );
-        setFilteredPlantas(results);
-      }
+      const results = await plantasService.search(searchTerm);
+      setFilteredPlantas(results);
     } catch (err) {
-      console.error('Erro na busca:', err);
+      // Fallback para busca no frontend
+      const term = searchTerm.toLowerCase();
+      const results = plantas.filter(planta => 
+        planta.nome?.toLowerCase().includes(term) || 
+        planta.especie?.toLowerCase().includes(term) ||
+        planta.descricao?.toLowerCase().includes(term)
+      );
+      setFilteredPlantas(results);
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [searchTerm, plantas]);
 
-  // Função para filtrar por categoria
-  const filterByCategory = async (category) => {
+  // Função para filtrar por categoria (memoizada com useCallback)
+  const filterByCategory = useCallback(async (category) => {
     if (category === 'todas') {
       setFilteredPlantas(plantas);
       return;
     }
     
     try {
-      // Verificar se o backend suporta filtro por categoria
-      // Se sim, usamos a API, senão fazemos a filtragem no frontend
-      try {
-        const results = await plantasService.filterByCategory(category);
-        setFilteredPlantas(results);
-      } catch (filterError) {
-        // Fallback para filtro no frontend
-        const results = plantas.filter(planta => 
-          planta.categoria && planta.categoria.toLowerCase() === category.toLowerCase()
-        );
-        setFilteredPlantas(results);
-      }
+      const results = await plantasService.filterByCategory(category);
+      setFilteredPlantas(results);
     } catch (err) {
-      console.error('Erro no filtro:', err);
+      // Fallback para filtro no frontend
+      const results = plantas.filter(planta => 
+        planta.categoria?.toLowerCase() === category.toLowerCase()
+      );
+      setFilteredPlantas(results);
     }
-  };
+  }, [plantas]);
 
   // Lidar com mudança na busca
   useEffect(() => {
@@ -139,7 +120,7 @@ const PlantList = () => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification({ show: false, message: '', type: '' });
-    }, 5000);
+    }, 3000);
   };
 
   // Função para excluir uma planta
@@ -152,10 +133,9 @@ const PlantList = () => {
       setPlantas(updatedPlantas);
       setFilteredPlantas(filteredPlantas.filter(planta => planta.id !== id));
       
-      showNotification('Planta excluída com sucesso!', 'success');
+      showNotification('Planta excluída com sucesso!');
     } catch (err) {
-      console.error('Erro ao excluir planta:', err);
-      showNotification('Erro ao excluir planta. Tente novamente.', 'error');
+      showNotification('Erro ao excluir planta.', 'error');
     }
   };
 
@@ -171,6 +151,8 @@ const PlantList = () => {
       setFilteredPlantas([...filteredPlantas, newPlant]);
     }
     
+    // Fechar o formulário após adicionar
+    setShowForm(false);
     showNotification('Planta adicionada com sucesso!');
   };
 
@@ -179,24 +161,22 @@ const PlantList = () => {
     .filter(planta => planta.categoria)
     .map(planta => planta.categoria.toLowerCase()))];
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-  };
-
-  const toggleForm = () => {
-    setShowForm(!showForm);
-  };
-  
   return (
     <div className="plant-list">
-      <h2>Catálogo de Plantas</h2>
-      <p className="plant-list-subtitle">
-        Explore nossa seleção de plantas ornamentais e medicinais, escolhidas a dedo para embelezar seu jardim e casa.
-      </p>
+      <div className="plant-list-header">
+        <div>
+          <h2>Catálogo de Plantas</h2>
+          <div className={`api-status ${apiStatus}`}>
+            {apiStatus === 'conectado' ? 'Online' : 'Offline'}
+          </div>
+        </div>
+        <button 
+          className="add-plant-button" 
+          onClick={() => setShowForm(!showForm)}
+        >
+          <FaPlus /> {showForm ? 'Cancelar' : 'Nova Planta'}
+        </button>
+      </div>
       
       {notification.show && (
         <div className={`notification ${notification.type}`}>
@@ -204,62 +184,59 @@ const PlantList = () => {
         </div>
       )}
       
-      <div className="api-indicator">
-        <span className="azure-icon"></span>
-        <span className={`status-${apiStatus}`}></span>
-        {apiStatus === 'conectado' ? 'Conectado à API' : 
-         apiStatus === 'parcial' ? 'Conectado parcialmente à API' : 
-         'API não disponível - Modo Offline'}
-      </div>
-      
-      <PendingUploads />
-      
-      <button className="toggle-form-button" onClick={toggleForm}>
-        {showForm ? 'Ocultar Formulário' : '+ Adicionar Nova Planta'}
-      </button>
-      
       {showForm && (
         <PlantForm 
           onPlantAdded={handlePlantAdded} 
           categorias={categorias}
+          onCancel={() => setShowForm(false)}
         />
       )}
       
-      <div className="search-container">
-        <input
-          type="text"
-          className="search-bar"
-          placeholder="Buscar plantas..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-        />
+      <div className="search-filter-container">
+        <div className="search-box">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Buscar plantas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         
-        <select 
-          className="filter-dropdown"
-          value={filter}
-          onChange={handleFilterChange}
-        >
-          {categorias.map((categoria, index) => (
-            <option key={index} value={categoria}>
-              {categoria === 'todas' ? 'Todas as categorias' : categoria.charAt(0).toUpperCase() + categoria.slice(1)}
-            </option>
-          ))}
-        </select>
+        <div className="filter-box">
+          <FaFilter className="filter-icon" />
+          <select 
+            className="filter-select"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            {categorias.map((categoria, index) => (
+              <option key={index} value={categoria}>
+                {categoria === 'todas' ? 'Todas as categorias' : categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       
+      <PendingUploads />
+      
       {loading ? (
-        <div className="loading">Carregando plantas...</div>
+        <div className="loading-indicator">Carregando plantas...</div>
       ) : error ? (
-        <div className="error">
+        <div className="error-container">
           <p>{error}</p>
-          <p className="error-subtitle">Você pode adicionar plantas usando o botão acima</p>
+          <button onClick={fetchPlantas} className="retry-button">Tentar novamente</button>
         </div>
       ) : isSearching ? (
-        <div className="loading">Buscando...</div>
+        <div className="loading-indicator">Buscando...</div>
       ) : filteredPlantas.length === 0 ? (
-        <div className="no-results">
-          <p>Nenhuma planta encontrada com os critérios selecionados.</p>
-          <p>Adicione novas plantas usando o botão acima.</p>
+        <div className="empty-state">
+          <p>Nenhuma planta encontrada.</p>
+          <button onClick={() => setShowForm(true)} className="empty-add-button">
+            <FaPlus /> Adicionar planta
+          </button>
         </div>
       ) : (
         <div className="plants-grid">
