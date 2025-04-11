@@ -41,7 +41,3 @@ npm run build
 - `/src/services` - Serviços para integração com a API
 - `/public` - Arquivos estáticos
 
-## Endpoints da API
-
-- `GET /plantas` - Lista todas as plantas
-- `GET /plantas/{id}` - Obtém uma planta específica
